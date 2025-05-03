@@ -1,0 +1,31 @@
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
+#include "structs.h"
+#include "constants.h"
+
+bool init_sdl(App *a) {
+    if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to init SDL: %s", SDL_GetError());
+        return false;
+    }
+    if(!(a->window = SDL_CreateWindow("Flappy bird", SCREEN_WIDTH, SCREEN_HEIGHT, 0))) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to create window: %s", SDL_GetError());
+        return false;
+    }
+    if(!(a->renderer = SDL_CreateRenderer(a->window, nullptr))) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to create renderer: %s", SDL_GetError());
+        return false;
+    }
+    if(!SDL_SetRenderVSync(a->renderer, 1)) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to enable VSync: %s\n", SDL_GetError());
+        return false;
+    }
+    if(!Mix_OpenAudio(0, &(SDL_AudioSpec) {
+        .format = MIX_DEFAULT_FORMAT,
+        .channels = MIX_DEFAULT_CHANNELS,
+        .freq = MIX_DEFAULT_FREQUENCY
+    })) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to init SDL3_mixer: %s", SDL_GetError());
+    }
+    return true;
+}
