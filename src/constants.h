@@ -7,7 +7,6 @@
 #define PLAYER_SIZE 30
 #define PLAYER_GRAVITY 5.0f
 #define PLAYER_JUMP_HEIGHT ((PLAYER_GRAVITY * 70))
-#define SPAWN_BARS 1
 
 #endif
 

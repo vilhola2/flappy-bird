@@ -64,13 +64,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
                 case SDLK_SPACE: case SDLK_UP:
                     jump_key_was_down = false;
             }
-        case SDL_EVENT_USER:
-            switch(event->user.code) {
-                case SPAWN_BARS: {
-                    spawn_bars_ptr spawn_bars = (spawn_bars_ptr)event->user.data1; // user_data is a function pointer
-                    if(!spawn_bars()) { return SDL_APP_FAILURE; } break;
-                }
-            }
     }
     return SDL_APP_CONTINUE;
 }
@@ -84,15 +77,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     player_collided |= update_player_pos(&player);
     render_player(&player, a->renderer);
     player_collided |= process_obstacles(&player, a->renderer);
-    if(player_collided) {
-        Mix_PlayChannel(-1, explosion, false);
-        player.color = (SDL_Color){ 0xD4, 0x4F, 0x4F, 0xFF };
-        render_player(&player, a->renderer);
-        SDL_RenderPresent(a->renderer);
-        init_player(&player);
-        init_obstacles();
-        SDL_Delay(1000);
-    }
+    if(player_collided) player_game_over(&player, a->renderer);
     SDL_RenderPresent(a->renderer);
     return SDL_APP_CONTINUE;
 }
