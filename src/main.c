@@ -10,14 +10,6 @@
 #include "obstacles.h"
 
 Player player;
-void init_player(Player *player) {
-    *player = (Player){ .color = { 0xBB, 0xBB, 0xBB, 0xFF }, .rect = { .x = PLAYER_X, .w = PLAYER_SIZE, .h = PLAYER_SIZE } };
-}
-
-void render_player(Player *player, SDL_Renderer *renderer) {
-    SDL_SetRenderDrawColor(renderer, player->color.r, player->color.g, player->color.b, player->color.a);
-    SDL_RenderFillRect(renderer, &(player->rect));
-}
 
 float delta_time = 0;
 void update_delta_time(void) {
@@ -88,17 +80,19 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     update_delta_time();
     SDL_SetRenderDrawColor(a->renderer, 0x0F, 0x0F, 0x0F, 0xFF);
     SDL_RenderClear(a->renderer);
-    update_player_pos(&player);
+    bool player_collided = false;
+    player_collided |= update_player_pos(&player);
     render_player(&player, a->renderer);
-    if(process_obstacles(&player, a->renderer)) {
+    player_collided |= process_obstacles(&player, a->renderer);
+    if(player_collided) {
         // collision happened
         Mix_PlayChannel(-1, explosion, false);
         player.color = (SDL_Color){ 0xD4, 0x4F, 0x4F, 0xFF };
         render_player(&player, a->renderer);
         SDL_RenderPresent(a->renderer);
-        SDL_Delay(1000);
         init_player(&player);
         init_obstacles();
+        SDL_Delay(1000);
     }
     SDL_RenderPresent(a->renderer);
     return SDL_APP_CONTINUE;
