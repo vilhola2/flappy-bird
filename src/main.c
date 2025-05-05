@@ -85,7 +85,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     render_player(&player, a->renderer);
     player_collided |= process_obstacles(&player, a->renderer);
     if(player_collided) {
-        // collision happened
         Mix_PlayChannel(-1, explosion, false);
         player.color = (SDL_Color){ 0xD4, 0x4F, 0x4F, 0xFF };
         render_player(&player, a->renderer);
