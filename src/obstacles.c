@@ -26,8 +26,12 @@ bool spawn_bars(void) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to allocate a set of bars\n");
         return false;
     }
-    const int rand = SDL_rand(SCREEN_HEIGHT - PLAYER_SIZE);
-    //SDL_Log("%d\n", rand);
+    int sectors = SCREEN_HEIGHT / 100;
+    if (sectors < 3) sectors = 3;
+    const int sector_height = SCREEN_HEIGHT / sectors;
+    const int offset = (SCREEN_HEIGHT - sectors * sector_height) / 2;
+    const int rand = offset + SDL_rand(sectors - 2) * sector_height + sector_height;
+    SDL_Log("%d\n", rand);
     *bars = (Bars) {
         .top_bar = { .x = SCREEN_WIDTH, .w = PLAYER_SIZE * 2, .h = rand },
         .bottom_bar = { .x = SCREEN_WIDTH, .y = PLAYER_SIZE * 4 + rand, .w = PLAYER_SIZE * 2, .h = SCREEN_HEIGHT },

@@ -40,7 +40,7 @@ void player_game_over(Player *player, SDL_Renderer *renderer) {
 }
 
 void add_score(Player *player) {
-    player->score += 500;
+    player->score += 25;
 }
 
 static SDL_AtomicInt score_requests;
