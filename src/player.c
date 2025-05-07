@@ -10,8 +10,8 @@ bool update_player_pos(Player *player) {
     player->velocity += PLAYER_GRAVITY;
     player->rect.y += player->velocity* delta_time;
     if(player->rect.y < 0) return true;
-    if(player->rect.y >= SCREEN_HEIGHT - PLAYER_SIZE) {
-        player->rect.y = SCREEN_HEIGHT - PLAYER_SIZE;
+    if(player->rect.y >= screen_height - PLAYER_SIZE) {
+        player->rect.y = screen_height - PLAYER_SIZE;
         return true;
     }
     return false;
@@ -79,7 +79,7 @@ void render_score(SDL_Renderer *renderer) {
         return;
     }
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FRect dst = { (float)SCREEN_WIDTH / 2 - (float)surface->w / 10 / 2, 0, (float)surface->w / 10, (float)surface->h / 10};
+    SDL_FRect dst = { (float)screen_width / 2 - (float)surface->w / 10 / 2, 0, (float)surface->w / 10, (float)surface->h / 10};
     SDL_DestroySurface(surface);
     if(!texture) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_CreateTextureFromSurface failed: %s", SDL_GetError());
@@ -90,7 +90,7 @@ void render_score(SDL_Renderer *renderer) {
 }
 
 void init_player(Player *player) {
-    *player = (Player) { .color = { 0x4B, 0xFF, 0x4B, 0xFF }, .rect = { .x = PLAYER_X, .w = PLAYER_SIZE, .h = PLAYER_SIZE } };
+    *player = (Player) { .color = { 0x4B, 0xFF, 0x4B, 0xFF }, .rect = { .x = player_x, .w = PLAYER_SIZE, .h = PLAYER_SIZE } };
     if(score && *score != '0') {
         SDL_free(score);
         score = nullptr;

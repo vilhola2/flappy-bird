@@ -2,7 +2,10 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_mixer/SDL_mixer.h>
 #include "structs.h"
-#include "constants.h"
+
+Sint32 screen_width = 800;
+Sint32 screen_height = 600;
+float player_x = 0;
 
 bool init_sdl(App *a) {
     if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
@@ -13,8 +16,12 @@ bool init_sdl(App *a) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to init SDL_TTF: %s", SDL_GetError());
         return false;
     }
-    if(!(a->window = SDL_CreateWindow("Flappy bird", SCREEN_WIDTH, SCREEN_HEIGHT, 0))) {
+    if(!(a->window = SDL_CreateWindow("Flappy bird", screen_width, screen_height, SDL_WINDOW_RESIZABLE))) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to create window: %s", SDL_GetError());
+        return false;
+    }
+    if(!SDL_SetWindowMinimumSize(a->window, 800, 600)) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to set minimum window size: %s", SDL_GetError());
         return false;
     }
     if(!(a->renderer = SDL_CreateRenderer(a->window, nullptr))) {

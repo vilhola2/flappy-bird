@@ -7,10 +7,19 @@
 #include "player.h"
 #include "audio.h"
 #include "obstacles.h"
+#include "globals.h"
 
 Player player;
 
 float delta_time = 0;
+
+void update_screen_variables(Sint32 new_width, Sint32 new_height) {
+    player_x = (float)screen_width / 2 - (float)screen_width / 4;
+    screen_width = new_width;
+    screen_height = new_height;
+    SDL_Log("width: %d, height: %d\n", screen_width, screen_height);
+}
+
 void update_delta_time(void) {
     static Uint64 last_tick = 0, current_tick = 0;
     last_tick = current_tick;
@@ -28,6 +37,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     SDL_srand(0);
     if(!init_sdl(&a)) return SDL_APP_FAILURE;
     if(!init_sounds()) return SDL_APP_FAILURE;
+    update_screen_variables(screen_width, screen_height);
     init_player(&player);
     init_score_timer();
     init_obstacles();
@@ -53,8 +63,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
             jump_key_was_down = true; break;
         case SDL_EVENT_MOUSE_BUTTON_UP:
             if(event->button.button == SDL_BUTTON_LEFT) {
-                jump_key_was_down = false; break;
+                jump_key_was_down = false;
             }
+            break;
         case SDL_EVENT_KEY_DOWN:
             switch(event->key.key) {
                 case SDLK_SPACE: case SDLK_UP:
@@ -62,7 +73,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
                         Mix_PlayChannel(-1, jump, false);
                         trigger_player_jump(&player);
                     }
-                    jump_key_was_down = true; break;
+                    jump_key_was_down = true;
             }
             break;
         case SDL_EVENT_KEY_UP:
@@ -70,6 +81,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
                 case SDLK_SPACE: case SDLK_UP:
                     jump_key_was_down = false;
             }
+            break;
+        case SDL_EVENT_WINDOW_RESIZED:
+            update_screen_variables(event->window.data1, event->window.data2); break;
     }
     return SDL_APP_CONTINUE;
 }
