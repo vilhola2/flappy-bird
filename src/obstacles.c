@@ -46,12 +46,12 @@ Uint32 bars_callback(void* param, SDL_TimerID timer_id, Uint32 interval) {
 void init_obstacles(void) {
     for(int i = 0; i < bars_count; ++i) {
         SDL_free(bars_arr[i]);
-        bars_arr[i] = NULL;
+        bars_arr[i] = nullptr;
     }
     bars_count = 0;
     SDL_SetAtomicInt(&spawn_requests, 0);
     if(bars_timer) SDL_RemoveTimer(bars_timer);
-    bars_timer = SDL_AddTimer(3000, bars_callback, NULL);
+    bars_timer = SDL_AddTimer(3000, bars_callback, nullptr);
 }
 
 void destroy_obstacles(void) {

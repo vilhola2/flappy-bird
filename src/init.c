@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_mixer/SDL_mixer.h>
 #include "structs.h"
 #include "constants.h"
@@ -6,6 +7,10 @@
 bool init_sdl(App *a) {
     if(!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to init SDL: %s", SDL_GetError());
+        return false;
+    }
+    if(!TTF_Init()) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to init SDL_TTF: %s", SDL_GetError());
         return false;
     }
     if(!(a->window = SDL_CreateWindow("Flappy bird", SCREEN_WIDTH, SCREEN_HEIGHT, 0))) {

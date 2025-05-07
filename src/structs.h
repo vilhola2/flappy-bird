@@ -11,6 +11,7 @@ typedef struct {
 typedef struct {
     SDL_Color color;
     SDL_FRect rect;
+    Sint32 score;
     float velocity;
 } Player;
 

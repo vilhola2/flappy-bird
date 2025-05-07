@@ -26,8 +26,10 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.c")
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 find_package(SDL3_mixer REQUIRED CONFIG)
+find_package(SDL3_ttf REQUIRED CONFIG)
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME}
     SDL3::SDL3
     SDL3_mixer::SDL3_mixer
+    SDL3_ttf
 )

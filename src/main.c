@@ -1,9 +1,8 @@
-#include <SDL3/SDL_oldnames.h>
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "structs.h"
-#include "constants.h"
 #include "init.h"
 #include "player.h"
 #include "audio.h"
@@ -20,6 +19,7 @@ void update_delta_time(void) {
     //SDL_Log("delta_time: %f\n", delta_time);
 }
 
+TTF_Font *font = nullptr;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     (void) argc;
     (void) argv;
@@ -29,7 +29,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     if(!init_sdl(&a)) return SDL_APP_FAILURE;
     if(!init_sounds()) return SDL_APP_FAILURE;
     init_player(&player);
+    init_score_timer();
     init_obstacles();
+    font = TTF_OpenFont("resources/fonts/IBM-VGA-8x14.ttf", 600);
+    if(!font) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to open font: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
     return SDL_APP_CONTINUE;
 }
 
@@ -77,6 +83,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     player_collided |= update_player_pos(&player);
     render_player(&player, a->renderer);
     player_collided |= process_obstacles(&player, a->renderer);
+    update_score(&player);
+    render_score(a->renderer);
     if(player_collided) player_game_over(&player, a->renderer);
     SDL_RenderPresent(a->renderer);
     return SDL_APP_CONTINUE;
@@ -87,9 +95,11 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     if(result != SDL_APP_SUCCESS) SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Application failed to run\n");
     if(a->renderer) SDL_DestroyRenderer(a->renderer);
     if(a->window) SDL_DestroyWindow(a->window);
+    destroy_score();
     destroy_sounds();
     destroy_obstacles();
     Mix_CloseAudio();
     SDL_Quit();
+    TTF_CloseFont(font);
 }
 

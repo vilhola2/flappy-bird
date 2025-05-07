@@ -11,6 +11,10 @@ bool update_player_pos(Player *player);
 void trigger_player_jump(Player *player);
 void render_player(Player *player, SDL_Renderer *renderer);
 void player_game_over(Player *player, SDL_Renderer *renderer);
+void update_score(Player *player);
+void init_score_timer(void);
+void render_score(SDL_Renderer *renderer);
+void destroy_score();
 
 #endif
 
