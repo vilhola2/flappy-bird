@@ -1,6 +1,3 @@
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_oldnames.h>
-#include <SDL3_mixer/SDL_mixer.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include "structs.h"
 #include "constants.h"
@@ -15,7 +12,7 @@ bool update_player_pos(Player *player) {
     if(player->rect.y < 0) return true;
     if(player->rect.y >= SCREEN_HEIGHT - PLAYER_SIZE) {
         player->rect.y = SCREEN_HEIGHT - PLAYER_SIZE;
-        player->velocity = 0;
+        return true;
     }
     return false;
 }
