@@ -3,8 +3,10 @@
 #include <SDL3_mixer/SDL_mixer.h>
 #include "structs.h"
 
-Sint32 screen_width = 800;
-Sint32 screen_height = 600;
+#define SCREEN_STARTING_WIDTH 800
+#define SCREEN_STARTING_HEIGHT 600
+Sint32 screen_width = SCREEN_STARTING_WIDTH;
+Sint32 screen_height = SCREEN_STARTING_HEIGHT;
 float player_x = 0;
 
 bool init_sdl(App *a) {

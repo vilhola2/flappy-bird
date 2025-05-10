@@ -6,19 +6,44 @@
 #include "obstacles.h"
 #include "player.h"
 
-bool update_player_pos(Player *player) {
-    player->velocity += PLAYER_GRAVITY;
-    player->rect.y += player->velocity* delta_time;
-    if(player->rect.y < 0) return true;
-    if(player->rect.y >= screen_height - PLAYER_SIZE) {
-        player->rect.y = screen_height - PLAYER_SIZE;
-        return true;
+SDL_Mutex *player_mutex = nullptr;
+static SDL_AtomicInt score_requests;
+static char *score = nullptr;
+
+bool init_player(Player *player) {
+    *player = (Player) { .color = { 0x4B, 0xFF, 0x4B, 0xFF }, .rect = { .x = player_x, .w = PLAYER_SIZE, .h = PLAYER_SIZE } };
+    if(!player_mutex) {
+        if(!(player_mutex = SDL_CreateMutex())) {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to create player_mutex: %s\n", SDL_GetError());
+            return false;
+        }
     }
-    return false;
+    if(score && *score != '0') {
+        SDL_free(score);
+        score = nullptr;
+    }
+    init_score_timer();
+    return true;
+}
+
+bool update_player_pos(Player *player) {
+    bool collision = false;
+    SDL_LockMutex(player_mutex);
+    player->velocity += PLAYER_GRAVITY * delta_time;
+    player->rect.y += player->velocity * delta_time;
+    if(player->rect.y < 0) collision = true;
+    else if(player->rect.y >= screen_height - PLAYER_SIZE) {
+        player->rect.y = screen_height - PLAYER_SIZE;
+        collision = true;
+    }
+    SDL_UnlockMutex(player_mutex);
+    return collision;
 }
 
 void trigger_player_jump(Player *player) {
-    player->velocity = -PLAYER_JUMP_HEIGHT;
+    SDL_LockMutex(player_mutex);
+    player->velocity = -PLAYER_JUMP_VELOCITY;
+    SDL_UnlockMutex(player_mutex);
 }
 
 void render_player(Player *player, SDL_Renderer *renderer) {
@@ -28,7 +53,7 @@ void render_player(Player *player, SDL_Renderer *renderer) {
 
 void player_game_over(Player *player, SDL_Renderer *renderer) {
     Mix_PlayChannel(-1, explosion, false);
-    player->color = (SDL_Color){ 0xFF, 0x4B, 0x4B, 0x4B };
+    player->color = (SDL_Color) { 0xFF, 0x4B, 0x4B, 0x4B };
     render_player(player, renderer);
     SDL_RenderPresent(renderer);
     SDL_Delay(1000);
@@ -36,19 +61,16 @@ void player_game_over(Player *player, SDL_Renderer *renderer) {
     init_obstacles();
 }
 
-void add_score(Player *player) {
-    player->score += 25;
-}
 
-static SDL_AtomicInt score_requests;
+static inline void add_score(Player *player) { player->score += 25; }
 
-Uint32 score_callback(void* param, SDL_TimerID timer_id, Uint32 interval) { (void) param; (void) timer_id;
+Uint32 score_callback(void* param, SDL_TimerID timer_id, Uint32 interval) { 
+    (void) param; (void) timer_id;
     SDL_AddAtomicInt(&score_requests, 1);
     return interval;
 }
 
 static SDL_TimerID bars_timer = 0;
-static char *score = nullptr;
 void init_score_timer(void) {
     SDL_SetAtomicInt(&score_requests, 0);
     if(bars_timer) {
@@ -67,8 +89,12 @@ void update_score(Player *player) {
     }
 }
 
-void destroy_score() {
+void destroy_score(void) {
     if(score) SDL_free(score);
+}
+
+void player_cleanup(void) {
+    if(player_mutex) SDL_DestroyMutex(player_mutex);
 }
 
 void render_score(SDL_Renderer *renderer) {
@@ -87,14 +113,5 @@ void render_score(SDL_Renderer *renderer) {
     }
     SDL_RenderTexture(renderer, texture, nullptr, &dst);
     SDL_DestroyTexture(texture);
-}
-
-void init_player(Player *player) {
-    *player = (Player) { .color = { 0x4B, 0xFF, 0x4B, 0xFF }, .rect = { .x = player_x, .w = PLAYER_SIZE, .h = PLAYER_SIZE } };
-    if(score && *score != '0') {
-        SDL_free(score);
-        score = nullptr;
-    }
-    init_score_timer();
 }
 

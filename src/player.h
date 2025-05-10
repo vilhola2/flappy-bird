@@ -3,7 +3,7 @@
 
 #include "structs.h"
 
-void init_player(Player *player);
+bool init_player(Player *player);
 
 // returns true on collision
 bool update_player_pos(Player *player);
@@ -14,7 +14,8 @@ void player_game_over(Player *player, SDL_Renderer *renderer);
 void update_score(Player *player);
 void init_score_timer(void);
 void render_score(SDL_Renderer *renderer);
-void destroy_score();
+void destroy_score(void);
+void player_cleanup(void);
 
 #endif
 

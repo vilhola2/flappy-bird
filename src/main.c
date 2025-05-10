@@ -1,3 +1,5 @@
+#include <SDL3/SDL_atomic.h>
+#include <SDL3/SDL_render.h>
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
@@ -13,19 +15,31 @@ Player player;
 
 float delta_time = 0;
 
-void update_screen_variables(Sint32 new_width, Sint32 new_height) {
-    player_x = (float)screen_width / 2 - (float)screen_width / 4;
-    screen_width = new_width;
-    screen_height = new_height;
-    SDL_Log("width: %d, height: %d\n", screen_width, screen_height);
+SDL_AtomicInt new_width, new_height;
+void update_screen_variables(SDL_Renderer *renderer) {
+    int actual_width = SDL_GetAtomicInt(&new_width);
+    int actual_height = SDL_GetAtomicInt(&new_height);
+    SDL_SetAtomicInt(&new_width, 0);
+    SDL_SetAtomicInt(&new_height, 0);
+    float scale = (float)actual_height / (float)screen_height;
+    screen_width = (int)((float)actual_width / scale);
+    SDL_SetRenderScale(renderer, scale, scale);
+    player_x = (float)screen_width / 2.0f - (float)screen_width / 4.0f;
+    SDL_Log("actual: %dx%d -> virtual: %dx%d, scale: %f\n", actual_width, actual_height, screen_width, screen_height, scale);
 }
 
+
 void update_delta_time(void) {
-    static Uint64 last_tick = 0, current_tick = 0;
-    last_tick = current_tick;
-    current_tick = SDL_GetTicks();
-    delta_time = (current_tick - last_tick) / 1000.0f; // 1 second
-    //SDL_Log("delta_time: %f\n", delta_time);
+    static Uint64 last = 0;
+    Uint64 now = SDL_GetPerformanceCounter();
+    if(!last) {
+        last = now;
+        delta_time = 1.0f / 60;
+        return;
+    }
+    delta_time = (now - last) / (float)SDL_GetPerformanceFrequency();
+    last = now;
+    if(delta_time > 0.05f) delta_time = 0.05f; // clamp large jumps
 }
 
 TTF_Font *font = nullptr;
@@ -37,7 +51,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     SDL_srand(0);
     if(!init_sdl(&a)) return SDL_APP_FAILURE;
     if(!init_sounds()) return SDL_APP_FAILURE;
-    update_screen_variables(screen_width, screen_height);
+    SDL_SetAtomicInt(&new_width, 800);
+    SDL_SetAtomicInt(&new_height, 600);
+    update_screen_variables(a.renderer);
     init_player(&player);
     init_score_timer();
     init_obstacles();
@@ -83,13 +99,15 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
             }
             break;
         case SDL_EVENT_WINDOW_RESIZED:
-            update_screen_variables(event->window.data1, event->window.data2); break;
+            SDL_SetAtomicInt(&new_width, event->window.data1);
+            SDL_SetAtomicInt(&new_height, event->window.data2);
     }
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
     App *a = appstate;
+    if(SDL_GetAtomicInt(&new_width) || SDL_GetAtomicInt(&new_height)) update_screen_variables(a->renderer);
     update_delta_time();
     SDL_SetRenderDrawColor(a->renderer, 0x0F, 0x0F, 0x0F, 0xFF);
     SDL_RenderClear(a->renderer);
@@ -112,6 +130,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     destroy_score();
     destroy_sounds();
     destroy_obstacles();
+    player_cleanup();
     Mix_CloseAudio();
     SDL_Quit();
     TTF_CloseFont(font);

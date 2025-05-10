@@ -2,8 +2,8 @@
 #define DEFS_H
 
 #define PLAYER_SIZE 30
-#define PLAYER_GRAVITY 5.0f
-#define PLAYER_JUMP_HEIGHT ((PLAYER_GRAVITY * 70))
+#define PLAYER_GRAVITY 700.0f
+#define PLAYER_JUMP_VELOCITY 400.0f
 
 #endif
 
