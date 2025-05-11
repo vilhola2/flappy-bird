@@ -31,8 +31,10 @@ bool update_player_pos(Player *player) {
     SDL_LockMutex(player_mutex);
     player->velocity += PLAYER_GRAVITY * delta_time;
     player->rect.y += player->velocity * delta_time;
-    if(player->rect.y < 0) collision = true;
-    else if(player->rect.y >= screen_height - PLAYER_SIZE) {
+    if(player->rect.y < 0) {
+        player->rect.y = 0;
+        collision = true;
+    } else if(player->rect.y >= screen_height - PLAYER_SIZE) {
         player->rect.y = screen_height - PLAYER_SIZE;
         collision = true;
     }
